@@ -1,0 +1,39 @@
+name: 'test'
+
+on:
+  push:
+    branches:
+    - 'main'
+    tags:
+    - '*'
+  pull_request:
+    branches:
+    - 'main'
+
+jobs:
+  test:
+    name: 'test'
+    strategy:
+      fail-fast: false
+    runs-on: 'ubuntu-latest'
+
+    env:
+      GOOGLE_CLOUD_KMS_LOCATION: "projects/vargolabs/locations/us-east1"
+
+    steps:
+    - uses: 'actions/checkout@v2'
+
+    - uses: 'actions/setup-go@v2'
+      with:
+        go-version: '1.17'
+
+    - uses: 'actions/cache@v2'
+      with:
+        path: '~/go/pkg/mod'
+        key: '${{ runner.os }}-go-${{ hashFiles("**/go.sum") }}'
+        restore-keys: |-
+          ${{ runner.os }}-go-
+
+    - name: 'test'
+      run: |-
+        go test -race -shuffle=on -count=1 ./...
